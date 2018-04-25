@@ -1,0 +1,24 @@
+{
+  "name": "dreck",
+  "version": "1.0.0",
+  "description": "Helpers for express CRUD handlers",
+  "main": "dreck.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EmergentIdeas/dreck.git"
+  },
+  "keywords": [
+    "CRUD",
+    "express",
+    "mongodb"
+  ],
+  "author": "Dan Kolz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EmergentIdeas/dreck/issues"
+  },
+  "homepage": "https://github.com/EmergentIdeas/dreck#readme"
+}
