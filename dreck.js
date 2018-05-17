@@ -1,6 +1,8 @@
 const _ = require('underscore')
 const formInjector = require('form-value-injector')
 const commingle = require('commingle')
+const simplePropertyInjector = require('./binders/simple-property-injector')
+const filog = require('filter-log')
 
 function addCallbackToPromise(promise, callback) {
 	if(callback) {
@@ -25,7 +27,8 @@ class Dreck {
 				edit: ['/:focusId/edit'],		// GET show a from to edit
 				modify: ['/:focusId/edit'],		// POST modify an existing object
 				update: ['/:focusId'],			// PUT update an object
-				destroy: ['/:focusId']			// DELETE delete an object
+				destroy: ['/:focusId'],			// DELETE delete an object
+				delete: ['/:focusId/delete']	// POST delete with a POST
 				
 			},
 			templatePrefix: '',
@@ -39,12 +42,27 @@ class Dreck {
 			mongoCollection: null,
 			locals: {},
 			bannedInjectMembers: ['_id'],
-			allowedInjectMembers: []
+			allowedInjectMembers: [],
+			injectors: [(req, focus, next) => {
+				simplePropertyInjector(req, focus, this.bannedInjectMembers, next)
+			}],
+			log: filog('dreck:')
 		}, options)
+		
 	}
 	
 	indexGET(req, res, next) {
-		
+		this.fetch(this.createQuery(req, res))
+		.then((focus) => {
+			if(!focus || focus.length == 0) {
+				this.prepLocals(req, res)
+			}
+			else {
+				this.prepLocals(req, res, focus)
+			}
+			res.locals.dreck.title = this.listTitle(focus)
+			res.render(this.templatePrefix + this.templates.index)
+		})
 	}
 	
 	newGET(req, res, next) {
@@ -58,13 +76,14 @@ class Dreck {
 	createPOST(req, res, next) {
 		this.createNewFocus().then((focus) => {
 			this.updateFocus(req, res, focus).then((updated) => {
-				this.validateCreate(res, res, updated).then((validated) => {
+				this.validateCreate(req, res, updated).then((validated) => {
 					this.save(validated).then(() => {
 						this.afterCreate(req, res, next, focus)
 					}).catch((err) => {
 						next(err)
 					})
 				}).catch((err) => {
+					this.log(err)
 					this.prepLocals(req, res, updated)
 					res.locals.dreck.title = this.createTitle(updated)
 					res.render(this.templatePrefix + this.templates.new)
@@ -77,6 +96,7 @@ class Dreck {
 		this.fetch(this.createQuery(req, res))
 		.then((focus) => {
 			if(!focus || focus.length == 0) {
+				this.log.error('Missing for show: ' + req.originalUrl)
 				this.prepLocals(req, res)
 				res.render(this.templatePrefix + this.templates.missing)
 			}
@@ -93,6 +113,7 @@ class Dreck {
 		.then((focus) => {
 			_.extend(res.locals, this.locals)
 			if(!focus || focus.length == 0) {
+				this.log.error('Missing for edit screen: ' + req.originalUrl)
 				this.prepLocals(req, res)
 				res.render(this.templatePrefix + this.templates.missing)
 			}
@@ -107,14 +128,24 @@ class Dreck {
 	
 	modifyPOST(req, res, next) {
 		this.fetch(this.createIdQuery(req.params.focusId)).then((focus) => {
+			if(Array.isArray(focus)) {
+				if(focus.length == 1) {
+					focus = focus[0]
+				}
+				else {
+					next(new Error('Could not find object with id ' + req.params.focusId))
+				}
+			}
 			this.updateFocus(req, res, focus).then((updated) => {
-				this.validateModify(res, res, updated).then((validated) => {
+				this.validateModify(req, res, updated).then((validated) => {
 					this.save(validated).then(() => {
 						this.afterModify(req, res, next, focus)
 					}).catch((err) => {
+						this.log.error(err)
 						next(err)
 					})
 				}).catch((err) => {
+					this.log.error(err)
 					this.prepLocals(req, res, updated)
 					res.locals.dreck.title = this.editTitle(updated)
 					res.addFilter((chunk) => formInjector(chunk, updated))
@@ -130,6 +161,25 @@ class Dreck {
 	
 	destroyDELETE(req, res, next) {
 		
+	}
+	
+	destroyPOST(req, res, next) {
+		this.fetch(this.createIdQuery(req.params.focusId)).then((focus) => {
+			if(Array.isArray(focus)) {
+				if(focus.length == 1) {
+					focus = focus[0]
+				}
+				else {
+					next(new Error('Could not find object with id ' + req.params.focusId))
+				}
+			}
+			this.deleteFocus(req, res, focus).then((validated) => {
+				this.afterDelete(req, res, next)
+			}).catch((err) => {
+				this.log.error(err)
+				this.afterDelete(req, res, next)
+			})
+		})
 	}
 	
 	createQuery(req, res) {
@@ -149,6 +199,7 @@ class Dreck {
 		let p = new Promise((resolve, reject) => {
 			this.mongoCollection.find(query).toArray((err, result) => {
 				if(err) {
+					this.log.error(err)
 					return reject(err)
 				}
 				if(result) {
@@ -166,7 +217,41 @@ class Dreck {
 	
 	updateFocus(req, res, focus, callback) {
 		let p = new Promise((resolve, reject) => {
-			resolve(focus)
+			
+			if(this.injectors.length > 0) {
+				commingle(this.injectors)(req, focus, () => {
+					resolve(focus)
+				})
+			}
+			else {
+				resolve(focus)
+			}
+		})		
+		return addCallbackToPromise(p, callback)
+	}
+	
+	deleteFocus(req, res, focus, callback) {
+		let p = new Promise((resolve, reject) => {
+			this.mongoCollection.deleteOne(focus, (err, result) => {
+				if(!err) {
+					return resolve(result)
+				}
+				this.log.error(err)
+				return reject(err)
+			})
+		})		
+		return addCallbackToPromise(p, callback)
+	}
+	
+	save(focus, callback) {
+		let p = new Promise((resolve, reject) => {
+			this.mongoCollection.save(focus, (err, result) => {
+				if(!err) {
+					return resolve(result)
+				}
+				this.log.error(err)
+				return reject(err)
+			})
 		})		
 		return addCallbackToPromise(p, callback)
 	}
@@ -184,11 +269,17 @@ class Dreck {
 		})		
 		return addCallbackToPromise(p, callback)
 	}
+	validateDelete(req, res, focus, callback) {
+		let p = new Promise((resolve, reject) => {
+			resolve(focus)
+		})		
+		return addCallbackToPromise(p, callback)
+	}
 
 	
 	createNewFocus(callback) {
 		let p = new Promise((resolve, reject) => {
-			resolve({})
+			resolve(synchronousPostProcessor({}))
 		})
 		
 		return addCallbackToPromise(p, callback)
@@ -232,7 +323,6 @@ class Dreck {
 	}
 	
 	synchronousPostProcessor(obj) {
-		obj.test = 123
 		return obj
 	}
 	
@@ -242,6 +332,12 @@ class Dreck {
 		dvars.baseUrl = req.baseUrl
 		dvars.newUrl = req.baseUrl + this.urls.new[0]
 		dvars.createUrl = req.baseUrl + this.urls.create[0]
+		dvars.editPrefix = req.baseUrl
+		dvars.deletePrefix = req.baseUrl
+		if(dvars.editPrefix.lastIndexOf('/') != dvars.editPrefix.length - 1) {
+			dvars.editPrefix += '/'
+		}
+		dvars.deleteSuffix
 		
 		if(focus) {
 			res.locals.focus = focus
@@ -286,15 +382,24 @@ class Dreck {
 		return res.redirect(req.baseUrl)
 	}
 	
+	afterModify(req, res, next, focus) {
+		return res.redirect(req.baseUrl)
+	}
+	
+	afterDelete(req, res, next, focus) {
+		return res.redirect(req.baseUrl)
+	}
+	
 	addToRouter(router) {
 		router.get(this.urls.index, this.indexGET.bind(this))
 		router.get(this.urls.new, this.newGET.bind(this))
 		router.post(this.urls.create, this.createPOST.bind(this))
 		router.get(this.urls.show, this.showGET.bind(this))
 		router.get(this.urls.edit, this.editGET.bind(this))
-		router.get(this.urls.modify, this.modifyPOST.bind(this))
+		router.post(this.urls.modify, this.modifyPOST.bind(this))
 		router.put(this.urls.update, this.updatePUT.bind(this))
 		router.delete(this.urls.destroy, this.destroyDELETE.bind(this))
+		router.post(this.urls.delete, this.destroyPOST.bind(this))
 		return router
 	}
 }
