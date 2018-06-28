@@ -279,7 +279,7 @@ class Dreck {
 	
 	createNewFocus(callback) {
 		let p = new Promise((resolve, reject) => {
-			resolve(synchronousPostProcessor({}))
+			resolve(this.synchronousPostProcessor({}))
 		})
 		
 		return addCallbackToPromise(p, callback)
