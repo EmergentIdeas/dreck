@@ -4,17 +4,7 @@ const commingle = require('commingle')
 const simplePropertyInjector = require('./binders/simple-property-injector')
 const filog = require('filter-log')
 
-function addCallbackToPromise(promise, callback) {
-	if(callback) {
-		promise = promise.then((obj) => {
-			callback(null, obj)
-		}).catch((err) => {
-			callback(err)
-		})
-	}
-	
-	return promise
-}
+const addCallbackToPromise = require('./add-callback-to-promise')
 
 class Dreck {
 	constructor(options) {
@@ -120,7 +110,7 @@ class Dreck {
 			else {
 				this.prepLocals(req, res, focus[0])
 				res.locals.dreck.title = this.editTitle(focus[0])
-				res.addFilter((chunk) => formInjector(chunk, focus[0]))
+				this.addFormInjector(req, res, focus[0])
 				res.render(this.templatePrefix + this.templates.edit)
 			}
 		})
@@ -148,11 +138,15 @@ class Dreck {
 					this.log.error(err)
 					this.prepLocals(req, res, updated)
 					res.locals.dreck.title = this.editTitle(updated)
-					res.addFilter((chunk) => formInjector(chunk, updated))
+					this.addFormInjector(req, res, updated)
 					res.render(this.templatePrefix + this.templates.edit)
 				})
 			})
 		})
+	}
+	
+	addFormInjector(req, res, focus) {
+		res.addFilter((chunk) => formInjector(chunk, focus))
 	}
 	
 	updatePUT(req, res, next) {
