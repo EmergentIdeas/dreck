@@ -46,12 +46,18 @@ class Dreck {
 		.then((focus) => {
 			if(!focus || focus.length == 0) {
 				this.prepLocals(req, res)
+				res.locals.dreck.title = this.listTitle(focus)
+				res.render(this.templatePrefix + this.templates.index)
 			}
 			else {
 				this.prepLocals(req, res, focus)
+				this.sort(req, res, focus).then((focus) => {
+					res.locals.dreck.title = this.listTitle(focus)
+					res.locals.focus = focus
+					res.render(this.templatePrefix + this.templates.index)
+				})
 			}
-			res.locals.dreck.title = this.listTitle(focus)
-			res.render(this.templatePrefix + this.templates.index)
+
 		})
 	}
 	
@@ -220,6 +226,13 @@ class Dreck {
 			else {
 				resolve(focus)
 			}
+		})		
+		return addCallbackToPromise(p, callback)
+	}
+	
+	sort(req, res, focus, callback) {
+		let p = new Promise((resolve, reject) => {
+			resolve(focus)
 		})		
 		return addCallbackToPromise(p, callback)
 	}
