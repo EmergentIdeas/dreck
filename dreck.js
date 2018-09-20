@@ -123,7 +123,7 @@ class Dreck {
 	}
 	
 	modifyPOST(req, res, next) {
-		this.fetch(this.createIdQuery(req.params.focusId)).then((focus) => {
+		this.fetch(this.createQuery(req, res)).then((focus) => {
 			if(Array.isArray(focus)) {
 				if(focus.length == 1) {
 					focus = focus[0]
@@ -164,7 +164,7 @@ class Dreck {
 	}
 	
 	destroyPOST(req, res, next) {
-		this.fetch(this.createIdQuery(req.params.focusId)).then((focus) => {
+		this.fetch(this.createQuery(req, res)).then((focus) => {
 			if(Array.isArray(focus)) {
 				if(focus.length == 1) {
 					focus = focus[0]
