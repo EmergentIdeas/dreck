@@ -239,7 +239,7 @@ class Dreck {
 	
 	deleteFocus(req, res, focus, callback) {
 		let p = new Promise((resolve, reject) => {
-			this.mongoCollection.deleteOne(focus, (err, result) => {
+			this.mongoCollection.deleteOne({ _id: focus._id}, (err, result) => {
 				if(!err) {
 					return resolve(result)
 				}
