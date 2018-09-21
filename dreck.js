@@ -29,6 +29,7 @@ class Dreck {
 				edit: 'edit',
 				missing: 'missing'
 			},
+			contentType: 'text/html; charset=utf-8',
 			mongoCollection: null,
 			locals: {},
 			bannedInjectMembers: ['_id'],
@@ -356,6 +357,8 @@ class Dreck {
 		else {
 			
 		}
+		
+		res.setHeader('Content-Type', this.contentType)
 	}
 	
 	createTitle(focus) {
