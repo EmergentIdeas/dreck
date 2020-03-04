@@ -64,9 +64,11 @@ class Dreck {
 	
 	newGET(req, res, next) {
 		this.createNewFocus().then((focus) => {
-			this.prepLocals(req, res, focus)
-			res.locals.dreck.title = this.createTitle(focus[0])
-			res.render(this.templatePrefix + this.templates.new)
+			this.addAdditionalFormInformation(focus, req, res).then((focus) => {
+				this.prepLocals(req, res, focus)
+				res.locals.dreck.title = this.createTitle(focus[0])
+				res.render(this.templatePrefix + this.templates.new)
+			})
 		})
 	}
 	
@@ -115,10 +117,12 @@ class Dreck {
 				res.render(this.templatePrefix + this.templates.missing)
 			}
 			else {
-				this.prepLocals(req, res, focus[0])
-				res.locals.dreck.title = this.editTitle(focus[0])
-				this.addFormInjector(req, res, focus[0])
-				res.render(this.templatePrefix + this.templates.edit)
+				this.addAdditionalFormInformation(focus, req, res).then((focus) => {
+					this.prepLocals(req, res, focus[0])
+					res.locals.dreck.title = this.editTitle(focus[0])
+					this.addFormInjector(req, res, focus[0])
+					res.render(this.templatePrefix + this.templates.edit)
+				})
 			}
 		})
 	}
@@ -288,6 +292,14 @@ class Dreck {
 	createNewFocus(callback) {
 		let p = new Promise((resolve, reject) => {
 			resolve(this.synchronousPostProcessor({}))
+		})
+		
+		return addCallbackToPromise(p, callback)
+	}
+	
+	addAdditionalFormInformation(focus, req, res, callback) {
+		let p = new Promise((resolve, reject) => {
+			resolve(focus)
 		})
 		
 		return addCallbackToPromise(p, callback)
