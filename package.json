@@ -1,6 +1,6 @@
 {
   "name": "dreck",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Helpers for express CRUD handlers",
   "main": "dreck.js",
   "scripts": {
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/EmergentIdeas/dreck#readme",
   "dependencies": {
+    "add-callback-to-promise": "^1.0.1",
     "commingle": "0.0.4",
     "filter-log": "0.0.5",
     "form-value-injector": "^1.0.4",

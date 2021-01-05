@@ -4,7 +4,7 @@ const commingle = require('commingle')
 const simplePropertyInjector = require('./binders/simple-property-injector')
 const filog = require('filter-log')
 
-const addCallbackToPromise = require('./add-callback-to-promise')
+const addCallbackToPromise = require('add-callback-to-promise')
 
 class Dreck {
 	constructor(options) {
@@ -194,10 +194,23 @@ class Dreck {
 	}
 	
 	createIdQuery(id) {
-		return {
-			id: Buffer.from(id, "hex"),
-			_bsontype: "ObjectID"
+		if(typeof id == 'object') {
+			return id
 		}
+		let query;
+		if(typeof id == 'string' && id.length == 24) {
+			query = {
+				id: Buffer.from(id, "hex"),
+				_bsontype: "ObjectID"
+			}
+		}
+		
+		if(!query || query.id.toString('hex') != id) {
+			query = {
+				_id: id
+			}
+		}
+		return query
 	}
 	
 	fetch(query, callback) {
@@ -257,13 +270,28 @@ class Dreck {
 	
 	save(focus, callback) {
 		let p = new Promise((resolve, reject) => {
-			this.mongoCollection.save(focus, (err, result) => {
-				if(!err) {
-					return resolve(result)
+			if (focus._id) {
+				let options = {
+					upsert: true,
 				}
-				this.log.error(err)
-				return reject(err)
-			})
+				let id = focus._id
+				this.mongoCollection.replaceOne({_id: id}, focus, options, (err, result) => {
+					if (!err) {
+						return resolve(result)
+					}
+					this.log.error(err)
+					return reject(err)
+				})
+			}
+			else {
+				this.mongoCollection.insertOne(focus, (err, result) => {
+					if (!err) {
+						return resolve(result)
+					}
+					this.log.error(err)
+					return reject(err)
+				})
+			}
 		})		
 		return addCallbackToPromise(p, callback)
 	}
