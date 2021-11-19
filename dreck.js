@@ -477,6 +477,7 @@ class Dreck {
 		router.put(this.urls.update, this.updatePUT.bind(this))
 		router.delete(this.urls.destroy, this.destroyDELETE.bind(this))
 		router.post(this.urls.delete, this.destroyPOST.bind(this))
+		router.post(this.urls.sort, this.setSortOrderPOST.bind(this))
 		return router
 	}
 }
