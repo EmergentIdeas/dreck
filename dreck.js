@@ -18,7 +18,8 @@ class Dreck {
 				modify: ['/:focusId/edit'],		// POST modify an existing object
 				update: ['/:focusId'],			// PUT update an object
 				destroy: ['/:focusId'],			// DELETE delete an object
-				delete: ['/:focusId/delete']	// POST delete with a POST
+				delete: ['/:focusId/delete'],	// POST delete with a POST
+				sort: ['/sort']					// POST set the sortOrder attribute by _id
 				
 			},
 			templatePrefix: '',
@@ -37,7 +38,8 @@ class Dreck {
 			injectors: [(req, focus, next) => {
 				simplePropertyInjector(req, focus, this.bannedInjectMembers, next)
 			}],
-			log: filog('dreck:')
+			log: filog('dreck:'),
+			useSortOrder: true
 		}, options)
 		
 	}
@@ -250,9 +252,33 @@ class Dreck {
 	
 	sort(req, res, focus, callback) {
 		let p = new Promise((resolve, reject) => {
+			if(Array.isArray(focus)) {
+				if(this.useSortOrder) {
+					focus.sort((one, two) => {
+						return (one.sortOrder || 0) > (two.sortOrder || 0) ? 1 : -1
+					})
+				}
+			}
 			resolve(focus)
 		})		
 		return addCallbackToPromise(p, callback)
+	}
+
+	setSortOrderPOST(req, res, next) {
+		this.fetch({}).then((focus) => {
+			let promises = []	
+			for(let item of focus) {
+				if(req.body[item._id]) {
+					item.sortOrder = parseInt(req.body[item._id])
+					promises.push(this.save(item))
+				}
+			}
+			Promise.all(promises).then(() => {
+				res.end('success')
+			}).catch(err => {
+				res.end('failed')
+			})
+		})
 	}
 	
 	deleteFocus(req, res, focus, callback) {
@@ -380,6 +406,7 @@ class Dreck {
 		dvars.baseUrl = req.baseUrl
 		dvars.newUrl = req.baseUrl + this.urls.new[0]
 		dvars.createUrl = req.baseUrl + this.urls.create[0]
+		dvars.sortUrl = req.baseUrl + this.urls.sort[0]
 		dvars.editPrefix = req.baseUrl
 		dvars.deletePrefix = req.baseUrl
 		if(dvars.editPrefix.lastIndexOf('/') != dvars.editPrefix.length - 1) {
