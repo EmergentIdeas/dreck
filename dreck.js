@@ -6,6 +6,10 @@ const filog = require('filter-log')
 
 const addCallbackToPromise = require('add-callback-to-promise')
 
+function getSingleFocus(foci) {
+	return Array.isArray(foci) ? foci[0] : foci
+}
+
 class Dreck {
 	constructor(options) {
 		_.extend(this, {
@@ -68,7 +72,8 @@ class Dreck {
 		this.createNewFocus().then((focus) => {
 			this.addAdditionalFormInformation(focus, req, res).then((focus) => {
 				this.prepLocals(req, res, focus)
-				res.locals.dreck.title = this.createTitle(focus[0])
+				res.locals.dreck.title = this.createTitle(getSingleFocus(focus))
+				this.addFormInjector(req, res, getSingleFocus(focus))
 				res.render(this.templatePrefix + this.templates.new)
 			})
 		})
