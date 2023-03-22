@@ -26,6 +26,7 @@
     "commingle": "0.0.4",
     "filter-log": "^0.0.5",
     "form-value-injector": "^1.0.4",
-    "underscore": "^1.13.4"
+    "input-value-injector": "^1.0.8",
+    "underscore": "^1.13.6"
   }
 }
