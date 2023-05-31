@@ -3,6 +3,7 @@ const formInjector = require('form-value-injector')
 const commingle = require('commingle')
 const simplePropertyInjector = require('./binders/simple-property-injector')
 const filog = require('filter-log')
+const MongoDataService = require('@dankolz/mongodb-data-service')
 
 const addCallbackToPromise = require('add-callback-to-promise')
 
@@ -36,6 +37,7 @@ class Dreck {
 			},
 			contentType: 'text/html; charset=utf-8',
 			mongoCollection: null,
+			dataService: null,
 			locals: {},
 			bannedInjectMembers: ['_id'],
 			allowedInjectMembers: [],
@@ -45,6 +47,22 @@ class Dreck {
 			log: filog('dreck:'),
 			useSortOrder: true
 		}, options)
+		
+		if(this.mongoCollection && !this.dataService) {
+			this.dataService = new MongoDataService({
+				collections: {
+					default: this.mongoCollection
+				}
+			})
+			this.dataService.postFetchesProcessor = async function(result, collectionName) {
+				return new Promise((resolve, reject) => {
+					if(!result._id && result.id) {
+						result._id = result.id
+					}
+					resolve(result)
+				})
+			}
+		}
 		
 	}
 	
@@ -201,40 +219,18 @@ class Dreck {
 	}
 	
 	createIdQuery(id) {
-		if(typeof id == 'object') {
-			return id
-		}
-		let query;
-		if(typeof id == 'string' && id.length == 24) {
-			query = {
-				id: Buffer.from(id, "hex"),
-				_bsontype: "ObjectID"
-			}
-		}
-		
-		if(!query || query.id.toString('hex') != id) {
-			query = {
-				_id: id
-			}
-		}
-		return query
+		return this.dataService.createIdQuery(id)
 	}
 	
 	fetch(query, callback) {
 		let p = new Promise((resolve, reject) => {
-			this.mongoCollection.find(query).toArray((err, result) => {
-				if(err) {
-					this.log.error(err)
-					return reject(err)
-				}
-				if(result) {
-					this.postFetchesProcessor(result).then((processed) => {
-						resolve(processed)
-					})
-				}
-				else {
-					resolve(result)
-				}
+			this.dataService.fetch(query).then(result => {
+				this.postFetchesProcessor(result).then((processed) => {
+					resolve(processed)
+				})
+
+			}).catch(e => {
+				return reject(e)
 			})
 		})
 		return addCallbackToPromise(p, callback)
@@ -287,42 +283,18 @@ class Dreck {
 	}
 	
 	deleteFocus(req, res, focus, callback) {
-		let p = new Promise((resolve, reject) => {
-			this.mongoCollection.deleteOne({ _id: focus._id}, (err, result) => {
-				if(!err) {
-					return resolve(result)
-				}
-				this.log.error(err)
-				return reject(err)
-			})
-		})		
+		let p = this.dataService.remove({ _id: focus._id})	
 		return addCallbackToPromise(p, callback)
 	}
 	
 	save(focus, callback) {
 		let p = new Promise((resolve, reject) => {
-			if (focus._id) {
-				let options = {
-					upsert: true,
-				}
-				let id = focus._id
-				this.mongoCollection.replaceOne({_id: id}, focus, options, (err, result) => {
-					if (!err) {
-						return resolve(result)
-					}
-					this.log.error(err)
-					return reject(err)
-				})
-			}
-			else {
-				this.mongoCollection.insertOne(focus, (err, result) => {
-					if (!err) {
-						return resolve(result)
-					}
-					this.log.error(err)
-					return reject(err)
-				})
-			}
+			this.dataService.save(focus).then(([result]) => {
+				resolve(result)
+			})
+			.catch(e => {
+				reject(e)
+			})
 		})		
 		return addCallbackToPromise(p, callback)
 	}
@@ -450,12 +422,15 @@ class Dreck {
 	}
 	
 	getFocusId(focus) {
-		if(focus && focus._id) {
-			if(focus._id.toHexString) {
-				return focus._id.toHexString()
-			}
-			return focus._id
+		if(focus && focus.id) {
+			return focus.id
 		}
+		// if(focus && focus._id) {
+		// 	if(focus._id.toHexString) {
+		// 		return focus._id.toHexString()
+		// 	}
+		// 	return focus._id
+		// }
 		
 		return null
 	}
