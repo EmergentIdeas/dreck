@@ -1,0 +1,15 @@
+
+__::$pretemplate__
+
+
+<h2>Examples</h2>
+<div class="ei-editable-sortable-tiles">
+	<a href="__dreck.createUrl__">Add Example</a>
+	<ul class="tiles" data-sort-url="__dreck.sortUrl__">
+	__focus::./example-tile__
+
+	</ul>
+</div>
+
+
+__::$posttemplate__

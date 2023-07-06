@@ -425,12 +425,12 @@ class Dreck {
 		if(focus && focus.id) {
 			return focus.id
 		}
-		// if(focus && focus._id) {
-		// 	if(focus._id.toHexString) {
-		// 		return focus._id.toHexString()
-		// 	}
-		// 	return focus._id
-		// }
+		if(focus && focus._id) {
+		 	if(focus._id.toHexString) {
+		 		return focus._id.toHexString()
+			}
+		 	return focus._id
+		}
 		
 		return null
 	}

@@ -1,0 +1,8 @@
+
+__::$pretemplate__
+<h1>__dreck.title__</h1>
+<form method="post" action="__dreck.editUrl__" class="dreck-form">
+__::./fields__
+<button type="submit">Save</button>
+</form>
+__::$posttemplate__

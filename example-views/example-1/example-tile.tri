@@ -1,0 +1,17 @@
+<li class="example-tile tile " data-id="__this._id__">
+	<div class="ei-css-grid">
+		<div class="t1 actions">
+			<a class="edit" href="__$globals.dreck.editPrefix____this._id__/edit">e</a><br/>
+			<form method="post" action="__$globals.dreck.editPrefix____this._id__/delete">
+				<button class="delete" onclick="return confirm('Are you sure you want to delete?')">&times;</button>
+			</form>
+			<a class="move" href="#">&#8597;</a>
+		</div>
+		<div class="t2">
+			<img class="primary-preview" src="__img__" />
+		</div>
+		<div class="t8">
+			<div class="name">__name__</div>
+		</div>
+	</div>
+</li>

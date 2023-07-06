@@ -1,0 +1,13 @@
+
+__::$pretemplate__
+
+<h1>__dreck.title__</h1>
+<form method="post" action="__dreck.createUrl__" class="dreck-form">
+	
+	__::./fields__
+	<br/><br/>
+	<div class="bottom-buttons">
+		<button type="submit">Create</button>
+	</div>
+</form>
+__::$posttemplate__

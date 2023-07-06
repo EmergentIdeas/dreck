@@ -1,0 +1,23 @@
+__::$pretemplate__
+<div class="container dreck-page">
+	<h1>__dreck.title__</h1>
+	<a href="__dreck.createUrl__">Create</a>
+	<br/><br/>
+	<table class="listing dreck-listing-1">
+		<tr>
+			<th>
+				Name
+			</th>
+			<th>
+				
+			</th>
+		</tr>
+		__focus::./list-row__
+	</table>
+	<br/><br/>
+	<a href="__dreck.createUrl__">Create</a>
+	
+	<br/><br/><br/>
+</div>
+__::$posttemplate__
+
