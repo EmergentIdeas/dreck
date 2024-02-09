@@ -1,6 +1,6 @@
 {
   "name": "dreck",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Helpers for express CRUD handlers",
   "main": "dreck.js",
   "scripts": {

@@ -269,8 +269,8 @@ class Dreck {
 		this.fetch({}).then((focus) => {
 			let promises = []	
 			for(let item of focus) {
-				if(req.body[item._id]) {
-					item.sortOrder = parseInt(req.body[item._id])
+				if((item._id && item._id in req.body) || (item.id && item.id in req.body)) {
+					item.sortOrder = parseInt(req.body[item._id] || req.body[item.id] || 0)
 					promises.push(this.save(item))
 				}
 			}
