@@ -1,0 +1,8 @@
+<tr>
+	__::$$globals.fieldDataCellsTemplate__
+	<td class="actions">
+		<form class="delete" method="post" action="__$globals.dreck.editPrefix____this.id__/delete" onsubmit="return confirm('Delete?')"	>
+			<button type="submit">&times;</button>
+		</form>
+	</td>
+</tr>

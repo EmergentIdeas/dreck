@@ -13,4 +13,4 @@ const prefixBinder = (req, focus, bannedInjectMembers, prefix, next) => {
 	
 }
 
-module.exports = prefixBinder
+export default prefixBinder

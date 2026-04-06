@@ -22,4 +22,4 @@ let inject = (req, focus, bannedInjectMembers, next) => {
 	next()
 }
 
-module.exports = inject
+export default inject

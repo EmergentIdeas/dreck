@@ -1,0 +1,13 @@
+<table class="listing dreck-listing-1">
+	<thead>
+		<tr>
+			__::$fieldHeaderCellsTemplate__
+			<th>
+
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+	__focus::./list-row__
+	</tbody>
+</table>

@@ -1,10 +1,10 @@
 {
   "name": "dreck",
-  "version": "1.0.20",
+  "version": "2.0.0",
   "description": "Helpers for express CRUD handlers",
-  "main": "dreck.js",
+  "main": "dreck.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "run-webhandle-dev ./test/test-server.mjs"
   },
   "repository": {
     "type": "git",
@@ -22,12 +22,23 @@
   },
   "homepage": "https://github.com/EmergentIdeas/dreck#readme",
   "dependencies": {
-    "@dankolz/mongodb-data-service": "^1.0.3",
-    "add-callback-to-promise": "^1.0.1",
-    "commingle": "0.0.4",
-    "filter-log": "^1.0.0",
-    "form-value-injector": "^1.0.4",
-    "input-value-injector": "^1.0.8",
-    "underscore": "^1.13.6"
+    "@dankolz/ei-css-grid": "^1.0.1",
+    "@webhandle/drag-sortable-list": "^1.0.3",
+    "@webhandle/initialize-webhandle-component": "^1.0.4",
+    "commingle": "^1.1.1",
+    "ei-form-styles-1": "^1.0.4",
+    "filter-log": "^1.0.13",
+    "form-value-injector": "^1.0.6"
+  },
+  "devDependencies": {
+    "@dankolz/in-memory-data-service": "^1.0.2"
   }
+  , "files": [
+	"binders"
+	, "public"
+	, "views/dreck"
+	, "*.mjs"
+	, "README.md"
+
+  ]
 }

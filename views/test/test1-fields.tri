@@ -1,0 +1,15 @@
+<div class="ei-form-styles">
+	<label>
+		Name:
+		<input type="text" name="name" />
+	</label>
+
+	<label>
+		Sex:
+		<select name="sex">
+			<option value="">-- choose one --</option>
+			<option value="male">male</option>
+			<option value="female">female</option>
+		</select>
+	</label>
+</div>

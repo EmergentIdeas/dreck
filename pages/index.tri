@@ -1,0 +1,9 @@
+__::start__
+<div>
+	<h1>Dreck Test</h1>
+	<p>
+		<a href="/test1">Test 1 Dreck</a>
+	</p>
+</div>
+
+__::end__

@@ -1,0 +1,10 @@
+__::$pretemplate__
+<div class="dreck-page">
+	__::dreck/addExternalResources__
+	<h1>__dreck.title || 'Edit'__</h1>
+	<form method="post" action="__dreck.editUrl__" class="dreck-form">
+		__::$editFieldsTemplate__
+		<button type="submit">Save</button>
+	</form>
+</div>
+__::$posttemplate__

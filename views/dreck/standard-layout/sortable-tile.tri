@@ -1,0 +1,15 @@
+<li class="tile " data-id="__this._id__">
+	<div class="ei-css-grid">
+		<div class="t1 actions">
+			<a class="edit" href="__$globals.dreck.editPrefix____this._id__/edit">e</a><br/>
+			<form method="post" action="__$globals.dreck.editPrefix____this._id__/delete">
+				<button class="delete" onclick="return confirm('Are you sure you want to delete?')">&times;</button>
+			</form>
+			<span class="move" >&#8597;</span>
+		</div>
+		<div class="t11">
+			__::$$globals.sortableTileContentTemplate__
+			
+		</div>
+	</div>
+</li>

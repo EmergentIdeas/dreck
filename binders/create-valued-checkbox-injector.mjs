@@ -1,4 +1,4 @@
-function createValuedCheckboxInjector(inputName) {
+export default function createValuedCheckboxInjector(inputName) {
 	return (req, focus, next) => {
 		if(req.body[inputName]) {
 			if(Array.isArray(req.body[inputName])) {
@@ -14,5 +14,3 @@ function createValuedCheckboxInjector(inputName) {
 		next()
 	}	
 }
-
-module.exports = createValuedCheckboxInjector
