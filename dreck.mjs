@@ -63,6 +63,7 @@ export class Dreck {
 			bannedInjectMembers: ['_id', 'id'],
 			allowedInjectMembers: [],
 			injectors: [],
+			formInformation: [],
 			log: filog('dreck:'),
 			useSortOrder: true
 		})
@@ -318,6 +319,12 @@ export class Dreck {
 	}
 
 	async addAdditionalFormInformation(focus, req, res) {
+		for(let info of this.formInformation) {
+			let f = await info(focus, req, res)
+			if(f) {
+				focus = f
+			}
+		}
 		return focus
 	}
 

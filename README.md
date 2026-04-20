@@ -21,7 +21,7 @@ npm install dreck
 
 ## Integration
 ```js
-import dreckSetup from "../initialize-webhandle-component.mjs"
+import dreckSetup from "dreck/initialize-webhandle-component.mjs"
 let dreckManager = await dreckSetup(webhandle)
 ```
 
@@ -105,7 +105,7 @@ import MongoDataService from "@dankolz/mongodb-data-service";
 import EventEmitter from "node:events";
 
 let mongoDb = webhandle.primaryDatabase || webhandle.dbs['mydatabase'] || (/*something*/)
-let collection = mongoDb.collection('collectionname')
+let collection = mongoDb.db.collection('collectionname')
 
 let events = new EventEmitter()
 
@@ -116,3 +116,11 @@ let dataService = new MongoDataService({
 	, notification: events
 })
 ```
+
+
+Dreck injects request parameters into the `focus` object (the object being created or edited). This is done by the functions
+in `dreck.injectors`, each of which has the signature `function(req, focus, next)`. By default, dreck will inject the properties
+from `req.body` (not including, id or _id) into the focus object.
+
+Dreck also sets up data before the create/editor form is displayed. You can add code to run before the form is drawn by adding a function to
+`dreck.formInformation` with the signature `async function(focus, req, res)`.
