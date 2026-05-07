@@ -24,13 +24,13 @@ initializeWebhandleComponent.setup = async function(webhandle, config) {
 	let stylesManager = await stylesSetup(webhandle)
 	let managerDragSortableList = await setupDragSortableList(webhandle)
 	
-	webhandle.routers.preDynamic.use((req, res, next) => {
-		if(config.alwaysProvideResources || !initializeWebhandleComponent.supportsMultipleImportMaps(req)) {
+	if(config.alwaysProvideResources) {
+		webhandle.routers.preDynamic.use((req, res, next) => {
 			manager.addExternalResources(res.locals.externalResourceManager)
-		}
-		next()
-	})
-	
+			next()
+		})
+	}
+
 	manager.addExternalResources = (externalResourceManager, options) => {
 		gridManager.addExternalResources(externalResourceManager)
 		stylesManager.addExternalResources(externalResourceManager)
@@ -55,24 +55,30 @@ initializeWebhandleComponent.setup = async function(webhandle, config) {
 		manager.addExternalResources(externalResourceManager)
 	})
 
-	webhandle.addTemplate(initializeWebhandleComponent.componentName + '/doTheThing', (data) => {
-		try {
-			let externalResourceManager = initializeWebhandleComponent.getExternalResourceManager(data)
-			manager.addExternalResources(externalResourceManager)
-
-			let resources = externalResourceManager.render()
-			let action = `
-	<script type="module">
-			import { component } from "${initializeWebhandleComponent.componentName}"
-			component()
-	</script>`
-
-			return resources + action
-		}
-		catch(e) {
-			console.error(e)
-		}
+	webhandle.addTemplate(initializeWebhandleComponent.componentName + '/renderExternalResources', (data) => {
+		let externalResourceManager = initializeWebhandleComponent.getExternalResourceManager(data)
+		manager.addExternalResources(externalResourceManager)
+		return externalResourceManager.render()
 	})
+
+	// webhandle.addTemplate(initializeWebhandleComponent.componentName + '/doTheThing', (data) => {
+	// 	try {
+	// 		let externalResourceManager = initializeWebhandleComponent.getExternalResourceManager(data)
+	// 		manager.addExternalResources(externalResourceManager)
+
+	// 		let resources = externalResourceManager.render()
+	// 		let action = `
+	// <script type="module">
+	// 		import { component } from "${initializeWebhandleComponent.componentName}"
+	// 		component()
+	// </script>`
+
+	// 		return resources + action
+	// 	}
+	// 	catch(e) {
+	// 		console.error(e)
+	// 	}
+	// })
 
 	// Allow access to the component and style code
 	let filePath = path.join(initializeWebhandleComponent.componentDir, initializeWebhandleComponent.staticFilePath)
